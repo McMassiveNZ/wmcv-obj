@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CLANG_TIDY_VERSION: "13.0.0"
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy: 
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        build_configuration: [Debug, Release]
+        compiler: [llvm, gcc]
+
+        exclude:
+          - os: windows-latest
+
+        include:
+          - os: 'windows-latest'
+            compiler: llvm
+            build_configuration: Debug
+
+          - os: 'windows-latest'
+            compiler: llvm
+            build_configuration: Release
+
+          - os: 'windows-latest'
+            compiler: gcc
+            build_configuration: Debug
+
+          - os: 'windows-latest'
+            compiler: gcc
+            build_configuration: Release
+
+          - os: 'windows-latest'
+            compiler: msvc
+            build_configuration: Debug
+
+          - os: 'windows-latest'
+            compiler: msvc
+            build_configuration: Release
+
+          - os: 'ubuntu-latest'
+            triplet: x64-linux
+
+          - os: 'macos-latest'
+            triplet: x64-osx
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v3
+
+    - name: cache
+      uses: actions/cache@v3
+      with:
+        path: "**/CPM_modules"
+        key: ${{ github.workflow }}-cpm-modules-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build_configuration}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_configuration}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{matrix.build_configuration}}
+
