@@ -1,13 +1,17 @@
-set(current_target blank_slate)
+set(current_target wmcv-obj)
 
-add_executable(
+add_library(
     ${current_target} 
-    main.cpp
+    wmcv_obj.cpp
+    pch.h
 )
 
-CPMAddPackage("gh:fmtlib/fmt#10.0.0")
-target_link_libraries(${current_target} PRIVATE fmt::fmt)
-set_property(TARGET fmt PROPERTY FOLDER third_party/fmt)
+if( MSVC )
+    target_sources(wmcv-obj PRIVATE pch.cpp)
+endif()
+
+target_precompile_headers(${current_target} PRIVATE pch.h pch.cpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
 
 if( ENABLE_ALL_REASONABLE_WARNINGS )
     MESSAGE("-- Additional Warnings Enabled")
