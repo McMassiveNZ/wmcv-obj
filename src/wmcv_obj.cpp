@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "wmcv_obj/wmcv_obj.h"
-#include "wmcv_obj_tokenizer.h"
 
 namespace wmcv
 {
